@@ -122,37 +122,84 @@ real x, y, rsmoothing, mass;
   return acceleration;
 }
 
-void OpenBoundary (Vrad, Rho)
-PolarGrid *Vrad, *Rho;
+void OpenBoundary (Vrad, Rho, Vtheta, dt)
+PolarGrid *Vrad, *Rho, *Vtheta;
+real dt;
 {
-  int i,j,l,ns;
+  int i, j, l, ns, nr;
+  real *dens, *vtheta, *vrad;
+  real dens0, omega0, vrad0, vtheta0, lambda, rad;
   real *rho, *vr, vri;
+  real R_inf, tau=0., ramp;
+  real viscosity;
   if (CPU_Rank != 0) return;
   ns = Rho->Nsec;
+  nr = Rho->Nrad;
+  dens = Rho->Field;
   rho = Rho->Field;
   vr  = Vrad->Field;
-  i = 1;
-#pragma omp parallel for private(l)
-  for (j = 0; j < ns; j++) {
-    l = j+i*ns;
-    rho[l-ns] = rho[l];		/* copy first ring into ghost ring */
-    if (vr[l+ns] > 0.0){
-      vr[l] = 0.0; /* we just allow outflow [inwards] */
-    }else{
-      if(NELSONBOUND==0){
-	vr[l] = vr[l+ns];
-      }
-      if(NELSONBOUND==1){
-        vri = -3.*FViscosity(Rmed[i])/Rmed[i]*3.*(-SIGMASLOPE+1.+2.*FLARINGINDEX);
-        if(fabs(vr[l+ns])>fabs(vri)){
-          vr[l]=vri;
-        }else
-          vr[l]=vr[l+ns];
-      }
-      if(NELSONBOUND==2){
-        vri = -3.*FViscosity(Rmed[i])/Rmed[i]*(-SIGMASLOPE+1.+2.*FLARINGINDEX);
-        vr[l]=vri;
-      }
+  vrad = vr;
+  vtheta = Vtheta->Field;
+  #pragma omp parallel for private(l)
+  if (NELSONBOUND==3){
+     R_inf = RMIN*1.25;
+     for (i = 0; i < nr; i++) {
+       for (j = 0; j < ns; j++) {
+         l = j+i*ns;
+         ramp = 0.0;
+         if (Rmed[i] < R_inf) {
+            ramp = (Rmed[i]-R_inf)/(R_inf-RMIN);
+            ramp = ramp*ramp;
+            tau = 2.0*M_PI*pow(RMIN, 1.5);
+         }
+
+         if (ramp > 1e-15) {
+           tau /= 3.0;             /* Called three times per timestep  */
+           rad = Rmed[i];
+           dens0 = SigmaMed[i];
+           viscosity = FViscosity (rad);
+           if (ViscosityAlpha) {
+             vrad0 -= 3.0*viscosity/rad*(-SIGMASLOPE+2.0*FLARINGINDEX+1.0);
+           } else {
+             vrad0 -= 3.0*viscosity/rad*(-SIGMASLOPE+.5);
+           }
+           omega0 = sqrt(G/(rad*rad*rad));
+           vtheta0 = omega0 * rad;
+           vtheta0 *= sqrt(1.0-pow(ASPECTRATIO,2.0)*\
+             pow(rad,2.0*FLARINGINDEX)*\
+             (1.+SIGMASLOPE-2.0*FLARINGINDEX));
+           vtheta0 -= OmegaFrame * rad;
+           lambda = ramp/tau*dt;
+           dens[l] = (dens[l]+lambda*dens0)/(1.+lambda);
+           vrad[l] = (vrad[l]+lambda*vrad0)/(1.+lambda);
+           vtheta[l] = (vtheta[l]+lambda*vtheta0)/(1.+lambda);
+         }
+       }
+     }
+  }else{
+      i = 1;
+    #pragma omp parallel for private(l)
+      for (j = 0; j < ns; j++) {
+        l = j+i*ns;
+        rho[l-ns] = rho[l];         /* copy first ring into ghost ring */
+        if (vr[l+ns] > 0.0){
+          vr[l] = 0.0; /* we just allow outflow [inwards] */
+        }else{
+          if(NELSONBOUND==0){
+            vr[l] = vr[l+ns];
+          }
+          if(NELSONBOUND==1){
+            vri = -3.*FViscosity(Rmed[i])/Rmed[i]*3.*(-SIGMASLOPE+1.+2.*FLARINGINDEX);
+            if(fabs(vr[l+ns])>fabs(vri)){
+              vr[l]=vri;
+            }else
+              vr[l]=vr[l+ns];
+          }
+          if(NELSONBOUND==2){
+            vri = -3.*FViscosity(Rmed[i])/Rmed[i]*(-SIGMASLOPE+1.+2.*FLARINGINDEX);
+            vr[l]=vri;
+          }
+        }
     }
   }
 }
@@ -285,7 +332,7 @@ real dt;
     StockholmBoundary (Vrad, Vtheta, Rho, dt);
     return;
   }
-  if (OpenInner == YES) OpenBoundary (Vrad, Rho);
+  if (OpenInner == YES) OpenBoundary (Vrad, Rho, Vtheta, dt);
   if (OpenOuter == YES) OpenBoundaryOuter (Vrad, Vtheta, Rho);
   if (NonReflecting == YES) NonReflectingBoundary (Vrad, Rho);
   if (OuterSourceMass == YES) ApplyOuterSourceMass (Rho, Vrad);
