@@ -17,7 +17,7 @@ real r;
 				/* to relax towards steady state, on a viscous time scale */
 
   real truncation = 1.0;
-  if (TRUNCATEWIDTH > 0.0 && r > TRUNCATERADIUS) {
+  if (TRUNCATETYPE > 0 && r > TRUNCATERADIUS) {
     real exponent = -1.0 * pow((r - TRUNCATERADIUS)/TRUNCATEWIDTH, 2.0);
     truncation = TRUNCATEDENSITY + (1 - TRUNCATEDENSITY) * exp(exponent);
   }
