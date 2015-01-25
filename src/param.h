@@ -49,3 +49,6 @@ extern	real	LAMBDADOUBLING;
 extern	int	NELSONBOUND;
 extern	real	MASSTIME;
 extern	real	DENSITYFLOOR;
+extern  real  TRUNCATERADIUS;
+extern  real  TRUNCATEWIDTH;
+extern  real  TRUNCATEDENSITY;
