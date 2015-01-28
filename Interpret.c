@@ -15,7 +15,7 @@ chronometer (if the -t switch is set on the command line).
 #define MAXVARIABLES 500
 
 extern int      begin_i;
-extern boolean  OpenInner, OpenOuter, ReflectingInner;
+extern boolean  OpenInner, OpenOuter;
 static Param    VariableSet[MAXVARIABLES];
 static int      VariableIndex = 0;
 static int	FirstStep = YES;
@@ -23,6 +23,7 @@ static clock_t  First, Preceeding, Current, FirstUser, CurrentUser, PreceedingUs
 static long	Ticks;
 boolean         FastTransport = YES, GuidingCenter = NO;
 boolean         IsDisk = YES, NonReflecting = NO, Corotating = NO, OuterSourceMass = NO;
+boolean         ReflectingInner = NO;
 boolean         Write_Density = YES, Write_Velocity = YES, Indirect_Term = YES;
 
 void
