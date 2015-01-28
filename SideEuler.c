@@ -126,7 +126,7 @@ void ReflectingBoundary (Vrad, Vtheta, Rho)
 PolarGrid *Vrad, *Vtheta, *Rho;
 {
   int i,j,l,ns;
-  real *rho, *vr, *vtheta, vri, rad;
+  real *rho, *vr, *vtheta, rad, omega0;
   if (CPU_Rank != 0) return;
   ns = Rho->Nsec;
   rho = Rho->Field;
