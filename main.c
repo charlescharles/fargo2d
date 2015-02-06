@@ -7,7 +7,7 @@ functions, then the main loop.
 
 #include "fargo.h"
 
-boolean         Restart = NO, OpenInner = NO;
+boolean         Restart = NO, OpenInner = NO, OpenOuter = NO;
 int             begin_i = 0, NbRestart = 0;
 static int      InnerOutputCounter=0, StillWriteOneOutput;
 
@@ -107,7 +107,7 @@ char *argv[];
   sys = InitPlanetarySystem (PLANETCONFIG);
   ListPlanets (sys);
   SplitDomain ();
-  if (verbose == YES) 
+  if (verbose == YES)
     TellEverything ();
   if (disable == YES)
     prs_exit (0);

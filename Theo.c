@@ -15,7 +15,14 @@ real r;
   if (r < CAVITYRADIUS) cavity = 1.0/CAVITYRATIO; /* This is *not* a steady state */
 				/* profile, if a cavity is defined. It first needs */
 				/* to relax towards steady state, on a viscous time scale */
-  return cavity*ScalingFactor*SIGMA0*pow(r,-SIGMASLOPE);
+
+  real truncation = 1.0;
+  if (TRUNCATETYPE > 0 && r > TRUNCATERADIUS) {
+    real exponent = -1.0 * pow((r - TRUNCATERADIUS)/TRUNCATEWIDTH, 2.0);
+    truncation = TRUNCATEDENSITY + (1 - TRUNCATEDENSITY) * exp(exponent);
+  }
+
+  return cavity * ScalingFactor * SIGMA0 * pow(r,-SIGMASLOPE) * truncation;
 }
 
 void FillSigma() {

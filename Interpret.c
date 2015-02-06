@@ -8,14 +8,14 @@ In addition, this file contains a function that prints the
 command line usage to the standard output, a function that
 provides verbose information about the setup (if the -v switch
 is set on the command line), and functions that act as a
-chronometer (if the -t switch is set on the command line). 
+chronometer (if the -t switch is set on the command line).
 */
 
 #include "fargo.h"
 #define MAXVARIABLES 500
 
 extern int      begin_i;
-extern boolean  OpenInner;
+extern boolean  OpenInner, OpenOuter;
 static Param    VariableSet[MAXVARIABLES];
 static int      VariableIndex = 0;
 static int	FirstStep = YES;
@@ -146,6 +146,7 @@ char *filename;
   if ((*TRANSPORT == 's') || (*TRANSPORT == 'S')) FastTransport = NO;
   if ((*OPENINNERBOUNDARY == 'O') || (*OPENINNERBOUNDARY == 'o')) OpenInner = YES;
   if ((*OPENINNERBOUNDARY == 'N') || (*OPENINNERBOUNDARY == 'n')) NonReflecting = YES;
+  if ((*OPENOUTERBOUNDARY == 'O') || (*OPENOUTERBOUNDARY == 'o')) OpenOuter = YES;
   if ((*GRIDSPACING == 'L') || (*GRIDSPACING == 'l')) LogGrid = YES;
   if ((*DISK == 'N') || (*DISK == 'n')) IsDisk = NO;
   if ((*FRAME == 'C') || (*FRAME == 'c')) Corotating = YES;
@@ -316,7 +317,7 @@ int number;
     fprintf (stderr, "Mean CPU Time between time steps : %.3f s\n", mean);
     fprintf (stderr, "CPU Load on last time step : %.1f %% \n", (real)(CurrentUser-PreceedingUser)/(real)(Current-Preceeding)*100.);
 
-  }	
+  }
   PreceedingUser = CurrentUser;
   Preceeding = Current;
 }

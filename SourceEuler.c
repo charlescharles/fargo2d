@@ -1,4 +1,4 @@
-/** \file SourceEuler.c 
+/** \file SourceEuler.c
 
 Contains routines used by the hydrodynamical loop. More specifically,
 it contains the main loop itself and all the source term substeps
@@ -18,7 +18,7 @@ transport substep is treated elsewhere. */
 static PolarGrid *TemperInt;
 static PolarGrid *VradNew,   *VradInt;
 static PolarGrid *VthetaNew, *VthetaInt;
-static real timeCRASH;  
+static real timeCRASH;
 extern boolean Corotating;
 
 static int AlreadyCrashed = 0, GasTimeStepsCFL;
@@ -26,7 +26,6 @@ static int AlreadyCrashed = 0, GasTimeStepsCFL;
 extern int TimeStep;
 extern boolean FastTransport, IsDisk;
 Pair DiskOnPrimaryAcceleration;
-
 
 boolean DetectCrash (array)
 PolarGrid *array;
@@ -41,13 +40,16 @@ PolarGrid *array;
   for (i = 0; i < nr; i++) {
     for (j = 0; j < ns; j++) {
       l = j+i*ns;
-      if (ptr[l] < 0.0) 
-	bool = YES;
+      // if (ptr[l] < 0.0)
+	     // bool = YES;
+      if (ptr[l] < DENSITYFLOOR) {
+        ptr[l]=DENSITYFLOOR;
+      }
     }
   }
   return bool;
 }
- 
+
 void FillPolar1DArrays ()
 {
   FILE *input, *output;
@@ -174,7 +176,7 @@ PlanetarySystem *sys;
   gastimestepcfl = 1;
   if (IsDisk == YES) {
     CommunicateBoundaries (Rho,Vrad,Vtheta,Label);
-    if (SloppyCFL == YES) 
+    if (SloppyCFL == YES)
       gastimestepcfl = ConditionCFL (Vrad, Vtheta, DT-dtemp);
   }
   MPI_Allreduce (&gastimestepcfl, &GasTimeStepsCFL, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
@@ -297,7 +299,7 @@ real dt;
 	if (j == ns-1) ljp = i*ns;
 	cs2m = cs2 = SOUNDSPEED[i]*SOUNDSPEED[i];
 	gradp = cs2*(rho[l]-rho[ljm])*2.0/(rho[l]+rho[ljm])*invdxtheta;
-	gradphi = (Pot[l]-Pot[ljm])*invdxtheta;   
+	gradphi = (Pot[l]-Pot[ljm])*invdxtheta;
 	vthetaint[l] = vtheta[l]-dt*(gradp+gradphi);
 	vthetaint[l] += dt*supp_torque;
       }
@@ -338,8 +340,8 @@ real dt;
       dv = vrad[lip]-vrad[l];
       if (dv < 0.0)
         qr[l] = CVNR*CVNR*rho[l]*dv*dv;
-      else 
-        qr[l] = 0.0; 
+      else
+        qr[l] = 0.0;
       dv = vtheta[ljp]-vtheta[l];
       if (dv < 0.0)
         qt[l] = CVNR*CVNR*rho[l]*dv*dv;
@@ -379,7 +381,7 @@ real dt;
     }
   }
 }
-		   		   
+
 int ConditionCFL (Vrad, Vtheta, deltaT)
 PolarGrid *Vrad, *Vtheta;
 real deltaT;
@@ -447,10 +449,10 @@ real deltaT;
 	  itdbg3=1.0/invdt3; itdbg4=1.0/invdt4;
 	  itdbg5=1.0/invdt5;
 	  mdtdbg = newdt;
-	  viscr = dxrad/dvr/4.0/CVNR/CVNR;     
+	  viscr = dxrad/dvr/4.0/CVNR/CVNR;
 	  visct = dxtheta/dvt/4.0/CVNR/CVNR;
 	}
-      }  
+      }
     }
   }
   for (i = Zero_or_active; i < MaxMO_or_active; i++) {

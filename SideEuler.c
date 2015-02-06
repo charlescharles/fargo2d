@@ -8,7 +8,7 @@ manipulate PolarGrid 's or initialize the forces evaluation.
 
 #include "fargo.h"
 
-extern boolean OpenInner, NonReflecting, OuterSourceMass;
+extern boolean OpenInner, OpenOuter, NonReflecting, OuterSourceMass;
 extern Pair DiskOnPrimaryAcceleration;
 
 real GasTotalMass (array)
@@ -18,7 +18,7 @@ PolarGrid *array;
    real *density, total = 0.0, fulltotal=0.0;
    ns = array->Nsec;
    density = array->Field;
-   if (FakeSequential && (CPU_Rank > 0)) 
+   if (FakeSequential && (CPU_Rank > 0))
      MPI_Recv (&total, 1, MPI_DOUBLE, CPU_Rank-1, 0, MPI_COMM_WORLD, &fargostat);
    for (i = Zero_or_active; i < Max_or_active; i++) {
      for (j = 0; j < ns; j++) {
@@ -46,7 +46,7 @@ PolarGrid *Density, *Vtheta;
    ns = Density->Nsec;
    density = Density->Field;
    vtheta = Vtheta->Field;
-   if (FakeSequential && (CPU_Rank > 0)) 
+   if (FakeSequential && (CPU_Rank > 0))
      MPI_Recv (&total, 1, MPI_DOUBLE, CPU_Rank-1, 2, MPI_COMM_WORLD, &fargostat);
    for (i = Zero_or_active; i < Max_or_active; i++) {
      for (j = 1; j < ns; j++) {
@@ -104,7 +104,7 @@ void InitComputeAccel ()
     }
   }
 }
-  
+
 Pair ComputeAccel (Rho, x, y, rsmoothing, mass)
 PolarGrid *Rho;
 real x, y, rsmoothing, mass;
@@ -140,6 +140,31 @@ PolarGrid *Vrad, *Rho;
       vr[l] = 0.0; /* we just allow outflow [inwards] */
     else
       vr[l] = vr[l+ns];
+  }
+}
+
+void OpenBoundaryOuter (Vrad, Vtheta, Rho)
+PolarGrid *Vrad, *Rho, *Vtheta;
+{
+  int i,j,l,ns, nr;
+  real *rho, *vr, *vt, vri;
+  ns = Rho->Nsec;
+  nr = Rho->Nrad;
+  rho = Rho->Field;
+  vr  = Vrad->Field;
+  vt = Vtheta->Field;
+
+  if (CPU_Rank == CPU_Number-1){
+   i = nr-2;
+   for (j = 0; j < ns; j++) {
+    l = j+i*ns;
+    rho[l+ns]=rho[l];         // copy first ring into ghost ring
+    if ((vr[l] < 0.0)){
+      vr[l+ns] = 0.0; // we just allow outflow [outwards]
+    }else{
+      vr[l+ns] = vr[l];
+    }
+   }
   }
 }
 
@@ -246,6 +271,7 @@ real dt;
     return;
   }
   if (OpenInner == YES) OpenBoundary (Vrad, Rho);
+  if (OpenOuter == YES) OpenBoundaryOuter (Vrad, Vtheta, Rho);
   if (NonReflecting == YES) NonReflectingBoundary (Vrad, Rho);
   if (OuterSourceMass == YES) ApplyOuterSourceMass (Rho, Vrad);
 }
@@ -266,4 +292,4 @@ real domega;
     }
   }
 }
- 
+
