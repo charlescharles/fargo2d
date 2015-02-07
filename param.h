@@ -10,7 +10,7 @@ extern	int	NINTERM;
 extern	int	NTOT;
 extern	char	OUTPUTDIR[512];
 extern	char	OPENINNERBOUNDARY[512];
-extern  char  OPENOUTERBOUNDARY[512];
+extern	char	OPENOUTERBOUNDARY[512];
 extern	char	ADVLABEL[512];
 extern	char	TRANSPORT[512];
 extern	char	PLANETCONFIG[512];
@@ -46,10 +46,8 @@ extern	real	TRANSITIONRADIUS;
 extern	real	TRANSITIONRATIO;
 extern	real	TRANSITIONWIDTH;
 extern	real	LAMBDADOUBLING;
-
-extern  int   TRUNCATETYPE;
-extern  real  TRUNCATERADIUS;
-extern  real  TRUNCATEWIDTH;
-extern  real  TRUNCATEDENSITY;
-
-extern real DENSITYFLOOR;
+extern	int	TRUNCATETYPE;
+extern	real	TRUNCATERADIUS;
+extern	real	TRUNCATEWIDTH;
+extern	real	TRUNCATEDENSITY;
+extern	real	DENSITYFLOOR;
