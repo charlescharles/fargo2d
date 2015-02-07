@@ -16,7 +16,7 @@ CC_PEYTON  = gcc
 OPT_PEYTON = -O3 -Wall
 OPTSEQ_PEYTON =
 PARAOPT_PEYTON =
-PARACC_PEYTON = mpicc
+PARACC_PEYTON = /usr/local/openmpi/1.6.5/intel140/x86_64/bin/mpicc
 
 
 # AMD Opteron platform

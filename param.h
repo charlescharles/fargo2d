@@ -46,11 +46,10 @@ extern	real	TRANSITIONRADIUS;
 extern	real	TRANSITIONRATIO;
 extern	real	TRANSITIONWIDTH;
 extern	real	LAMBDADOUBLING;
-extern	int	  NELSONBOUND;
+extern	int	NELSONBOUND;
 extern	real	MASSTIME;
 extern	real	DENSITYFLOOR;
-
-extern  int   TRUNCATETYPE;
-extern  real  TRUNCATERADIUS;
-extern  real  TRUNCATEWIDTH;
-extern  real  TRUNCATEDENSITY;
+extern	int	TRUNCATETYPE;
+extern	real	TRUNCATERADIUS;
+extern	real	TRUNCATEWIDTH;
+extern	real	TRUNCATEDENSITY;
