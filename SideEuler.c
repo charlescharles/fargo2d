@@ -136,7 +136,7 @@ PolarGrid *Vrad, *Rho;
   for (j = 0; j < ns; j++) {
     l = j+i*ns;
     rho[l-ns] = rho[l];		/* copy first ring into ghost ring */
-    if ((vr[l+ns] > 0.0) || (rho[l] < SigmaMed[0]))
+    if (vr[l+ns] > 0.0)
       vr[l] = 0.0; /* we just allow outflow [inwards] */
     else
       vr[l] = vr[l+ns];
