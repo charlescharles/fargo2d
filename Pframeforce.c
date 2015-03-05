@@ -25,7 +25,7 @@ static real vt_int[MAX1D], vt_cent[MAX1D];
 
 void ComputeIndirectTerm () {
   IndirectTerm.x = -DiskOnPrimaryAcceleration.x;
-  IndirectTerm.y = -DiskOnPrimaryAcceleration.y; 
+  IndirectTerm.y = -DiskOnPrimaryAcceleration.y;
   if (Indirect_Term == NO) {
     IndirectTerm.x = 0.0;
     IndirectTerm.y = 0.0;
@@ -39,6 +39,7 @@ PlanetarySystem *sys;
   int i,ii,j,l,nr,ns,k,NbPlanets;
   real x, y, angle, distance, distancesmooth, iplanet;
   real xplanet, yplanet, RRoche,smooth, mplanet, frac;
+  real planetTheta, a, b, num, denom, c3;
   real PlanetDistance, *Pot, pot, smoothing, cs;
   real InvPlanetDistance3, InvDistance;
   Pot= Potential->Field;
@@ -51,6 +52,7 @@ PlanetarySystem *sys;
   for (k = 0; k < NbPlanets; k++) {
     xplanet = sys->x[k];
     yplanet = sys->y[k];
+    planetTheta = atan2(yplanet, xplanet);
     mplanet = sys->massp[k]*MassTaper;
     PlanetDistance = sqrt(xplanet*xplanet+yplanet*yplanet);
     InvPlanetDistance3 =  1.0/PlanetDistance/PlanetDistance/PlanetDistance;
@@ -66,20 +68,32 @@ PlanetarySystem *sys;
       smoothing = cs * PlanetDistance * sqrt(PlanetDistance) * THICKNESSSMOOTHING;
     }
     smooth = smoothing*smoothing;
-#pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot)
+#pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot, a, b, num, denom, c3)
     for (i = 0; i < nr; i++) {
       InvDistance = 1.0/Rmed[i];
       for (j = 0; j < ns; j++) {
-	l = j+i*ns;
-	angle = (real)j/(real)ns*2.0*PI;
-	x = Rmed[i]*cos(angle);
-	y = Rmed[i]*sin(angle);
-	distance = (x-xplanet)*(x-xplanet)+(y-yplanet)*(y-yplanet);
-	distancesmooth = sqrt(distance+smooth);
-	pot = -G*mplanet/distancesmooth;
-	if (Indirect_Term == YES)
-	  pot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
-	Pot[l] += pot;
+      	l = j+i*ns;
+      	angle = (real)j/(real)ns*2.0*PI;
+      	x = Rmed[i]*cos(angle);
+      	y = Rmed[i]*sin(angle);
+      	distance = (x-xplanet)*(x-xplanet)+(y-yplanet)*(y-yplanet);
+      	distancesmooth = sqrt(distance+smooth);
+      	pot = -G*mplanet/distancesmooth;
+      	if (Indirect_Term == YES)
+      	  pot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
+      	Pot[l] += pot;
+
+        // remove the m=3 component of the potential
+        if (POTENTIALDAMPING == 3) {
+          a = pow(PlanetDistance, 2.) + pow(Rmed[i]);
+          b = 2. * PlanetDistance * Rmed[i];
+          num = -4. * (a - b) * (32. * pow(a, 2.) - 9. * pow(b, 2.)) * EllipticE(-2.*b / (a-b));
+          num += 4. * a * (32. * pow(a, 2.) - 17. * pow(b, 2.)) * EllipticK(-2.*b / (a-b));
+          denom = 15. * pow(b, 3.) * sqrt(a - b);
+          c3 = num / denom;
+
+          Pot[l] -= c3 * cos( 3. * (angle - planetTheta));
+        }
       }
     }
   }
@@ -93,15 +107,15 @@ PlanetarySystem *sys;
       y = Rmed[i]*sin(angle);
       pot = -G*1.0*InvDistance;  /*    Central Mass is 1 */
       pot -= IndirectTerm.x*x + IndirectTerm.y*y; /* Indirect term from disk only */
-      Pot[l] += pot;	
+      Pot[l] += pot;
     }
   }
-} 
+}
 
 void AdvanceSystemFromDisk (Rho, sys, dt)
 PlanetarySystem *sys;
 PolarGrid *Rho;
-real dt;		       
+real dt;
 {
   int NbPlanets, k, ii;
   Pair gamma;
@@ -173,8 +187,8 @@ real dt;
     vy = new_r*sqrt((1.+sys->mass[0])/new_r/new_r/new_r);
     sys->x[0] = new_r*cos(dtheta+theta);
     sys->y[0] = new_r*sin(dtheta+theta);
-    sys->vx[0]= vx*cos(dtheta+theta)-vy*sin(dtheta+theta); 
-    sys->vy[0]= vx*sin(dtheta+theta)+vy*cos(dtheta+theta); 
+    sys->vx[0]= vx*cos(dtheta+theta)-vy*sin(dtheta+theta);
+    sys->vy[0]= vx*sin(dtheta+theta)+vy*cos(dtheta+theta);
   }
 }
 
@@ -191,7 +205,7 @@ PlanetarySystem *sys;
     vy = sys->vy[i];
     FindOrbitalElements (x,y,vx,vy,1.0+sys->mass[i],i);
   }
-} 
+}
 
 real ConstructSequence (u, v, n)
      real *u, *v;
@@ -279,7 +293,7 @@ PolarGrid *Rho, *Vr, *Vt;
       vt[l] -= OmegaFrame*r;
       if (CentrifugalBalance)
 	vt[l] = vt_cent[i+IMIN];
-      if (i == nr) 
+      if (i == nr)
 	vr[l] = 0.0;
       else {
 	vr[l] = IMPOSEDDISKDRIFT*SIGMA0/SigmaInf[i]/ri;
@@ -294,4 +308,23 @@ PolarGrid *Rho, *Vr, *Vt;
   }
   for (j = 0; j < ns; j++)
     vr[j] = vr[j+ns*nr] = 0.0;
+}
+
+// http://www.exstrom.com/math/elliptic/ellipint.html
+real EllipticE (x)
+real x;
+{
+    real num = pow(x, 4.) - 28. * pow(x, 2.) + 64.;
+    real denom = 4. * pow(x, 4.) - 40. * pow(x, 2.) + 64.;
+    real g = num / denom;
+
+    return (PI / 2.) * (1. - (pow(x, 2.) * g)/4.);
+}
+
+real EllipticK (x)
+real x;
+{
+    real num = 3. * pow(x, 4.) - 44. * pow(x, 2.) + 64.;
+    real denom = 9. * pow(x, 4.) - 60. * pow(x, 2.) + 64.;
+    return (PI / 2.) * num / denom;
 }

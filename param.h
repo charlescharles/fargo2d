@@ -53,3 +53,4 @@ extern	int	TRUNCATETYPE;
 extern	real	TRUNCATERADIUS;
 extern	real	TRUNCATEWIDTH;
 extern	real	TRUNCATEDENSITY;
+extern  int   POTENTIALDAMPING;

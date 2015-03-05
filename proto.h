@@ -118,3 +118,6 @@ Pair MassInOut ();
 void StockholmBoundary ();
 void MakeDir ();
 FILE *fopenp ();
+
+real EllipticE ();
+real EllipticK ();
