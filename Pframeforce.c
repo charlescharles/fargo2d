@@ -93,7 +93,7 @@ PlanetarySystem *sys;
 
           denom = 15. * pow(b, 3.) * sqrt(a - b);
 
-          c3 = -1. * mplanet * num / (denom * PI);
+          c3 = -1. * G * mplanet * num / (denom * PI);
 
           Pot[l] -= c3 * cos( 3. * (angle - planetTheta));
         }
