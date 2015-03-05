@@ -28,12 +28,12 @@ void merge (nb)
       break;
     }
     for (i = 1; i < CPU_Number; i++) {
-      sprintf (command, "cd %s; cat gas%s%d.dat.%05d >> gas%s%d.dat",\
+      sprintf (command, "cd %s; cat gas%s%d.dat.%05d >> gas%s%d.dat;",\
 	       OUTPUTDIR, radix, nb, i, radix, nb);
       message (command);
       system (command);
     }
-    sprintf (command, "cd %s; rm -f gas%s%d.dat.0*",\
+    sprintf (command, "cd %s; rm -f gas%s%d.dat.0*;",\
 	     OUTPUTDIR, radix, nb);
     message (command);
     system (command);
