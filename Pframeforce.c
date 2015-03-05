@@ -85,12 +85,15 @@ PlanetarySystem *sys;
 
         // remove the m=3 component of the potential
         if (POTENTIALDAMPING == 3) {
-          a = pow(PlanetDistance, 2.) + pow(Rmed[i]);
+          a = pow(PlanetDistance, 2.) + pow(Rmed[i], 2.);
           b = 2. * PlanetDistance * Rmed[i];
+
           num = -4. * (a - b) * (32. * pow(a, 2.) - 9. * pow(b, 2.)) * EllipticE(-2.*b / (a-b));
           num += 4. * a * (32. * pow(a, 2.) - 17. * pow(b, 2.)) * EllipticK(-2.*b / (a-b));
+
           denom = 15. * pow(b, 3.) * sqrt(a - b);
-          c3 = num / denom;
+
+          c3 = -1. * mplanet * num / (denom * PI);
 
           Pot[l] -= c3 * cos( 3. * (angle - planetTheta));
         }
