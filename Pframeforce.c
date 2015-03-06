@@ -103,6 +103,9 @@ PlanetarySystem *sys;
           sprintf (msg, "\n planet distance: %f\n", PlanetDistance);
           message (msg);
 
+          sprintf (msg, "\n G: %f\n", G);
+          message (msg);
+
           sprintf (msg, "\n a: %f\n", a);
           message (msg);
 
