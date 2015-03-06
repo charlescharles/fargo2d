@@ -100,6 +100,21 @@ PlanetarySystem *sys;
 
           pot = c3 * cos( 3. * (angle - planetTheta));
 
+          sprintf (msg, "\n planet distance: %f\n", PlanetDistance);
+          message (msg);
+
+          sprintf (msg, "\n a: %f\n", a);
+          message (msg);
+
+          sprintf (msg, "\n b: %f\n", b);
+          message (msg);
+
+          sprintf (msg, "\n c3: %f\n", c3);
+          message (msg);
+
+          sprintf (msg, "\n angle diff: %f\n", angle - planetTheta);
+          message (msg);
+
           sprintf (msg, "\nphi_3 potential: %f\n", pot);
           message (msg);
 
