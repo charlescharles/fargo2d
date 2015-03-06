@@ -109,6 +109,12 @@ PlanetarySystem *sys;
           sprintf (msg, "\n b: %f\n", b);
           message (msg);
 
+          sprintf (msg, "\n num: %f\n", num);
+          message (msg);
+
+          sprintf (msg, "\n denom: %f\n", denom);
+          message (msg);
+
           sprintf (msg, "\n c3: %f\n", c3);
           message (msg);
 
