@@ -84,6 +84,10 @@ PlanetarySystem *sys;
       	  pot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
         sprintf (msg, "\n-Gm/R: %f\n", pot);
         message (msg);
+        sprintf (msg, "\n mplanet: %f\n", mplanet);
+        message (msg);
+        sprintf (msg, "\n nbplanets: %f\n", NbPlanets);
+        message (msg);
       	Pot[l] += pot;
 
         // remove the m=3 component of the potential
