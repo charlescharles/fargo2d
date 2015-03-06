@@ -81,6 +81,8 @@ PlanetarySystem *sys;
       	pot = -G*mplanet/distancesmooth;
       	if (Indirect_Term == YES)
       	  pot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
+        message ("\n-Gm/R: \n");
+        message (pot);
       	Pot[l] += pot;
 
         // remove the m=3 component of the potential
@@ -95,7 +97,12 @@ PlanetarySystem *sys;
 
           c3 = -1. * G * mplanet * num / (denom * PI);
 
-          Pot[l] -= c3 * cos( 3. * (angle - planetTheta));
+          pot = c3 * cos( 3. * (angle - planetTheta));
+
+          message ("\nphi_3 potential:\n");
+          message (pot);
+
+          Pot[l] += pot;
         }
       }
     }
