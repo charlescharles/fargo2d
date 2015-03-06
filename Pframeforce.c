@@ -42,6 +42,7 @@ PlanetarySystem *sys;
   real planetTheta, a, b, num, denom, c3;
   real PlanetDistance, *Pot, pot, smoothing, cs;
   real InvPlanetDistance3, InvDistance;
+  char msg[1024];
   Pot= Potential->Field;
   nr = Potential->Nrad;
   ns = Potential->Nsec;
@@ -68,7 +69,7 @@ PlanetarySystem *sys;
       smoothing = cs * PlanetDistance * sqrt(PlanetDistance) * THICKNESSSMOOTHING;
     }
     smooth = smoothing*smoothing;
-#pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot, a, b, num, denom, c3)
+#pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot, a, b, num, denom, c3, msg)
     for (i = 0; i < nr; i++) {
       InvDistance = 1.0/Rmed[i];
       for (j = 0; j < ns; j++) {
@@ -81,8 +82,8 @@ PlanetarySystem *sys;
       	pot = -G*mplanet/distancesmooth;
       	if (Indirect_Term == YES)
       	  pot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
-        message ("\n-Gm/R: \n");
-        message (pot);
+        sprintf (msg, "\n-Gm/R: %f\n", pot);
+        message (msg);
       	Pot[l] += pot;
 
         // remove the m=3 component of the potential
@@ -99,8 +100,8 @@ PlanetarySystem *sys;
 
           pot = c3 * cos( 3. * (angle - planetTheta));
 
-          message ("\nphi_3 potential:\n");
-          message (pot);
+          sprintf (msg, "\nphi_3 potential: %f\n", pot);
+          message (msg);
 
           Pot[l] += pot;
         }
