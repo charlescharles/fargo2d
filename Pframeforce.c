@@ -50,6 +50,8 @@ PlanetarySystem *sys;
   ComputeIndirectTerm();
 #pragma omp parallel for
   for (i = 0; i < (nr+1)*ns; i++) Pot[i] = 0.0;
+  sprintf (msg, "\n nbplanets: %f\n", NbPlanets);
+  message (msg);
   for (k = 0; k < NbPlanets; k++) {
     xplanet = sys->x[k];
     yplanet = sys->y[k];
