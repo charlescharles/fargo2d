@@ -88,6 +88,8 @@ PlanetarySystem *sys;
         message (msg);
         sprintf (msg, "\n mplanet: %f\n", mplanet);
         message (msg);
+        sprintf (msg, "\n masstaper: %f\n", MassTaper);
+        message (msg);
         sprintf (msg, "\n nbplanets: %d\n", NbPlanets);
         message (msg);
       	Pot[l] += pot;
