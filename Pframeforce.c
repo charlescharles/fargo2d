@@ -244,7 +244,7 @@ PlanetarySystem *sys;
   float temporary;
   FILE *CS;
   char csfile[512];
-  real  r, rg, omega, ri, pot, mplanet, alpha, abin;
+  real  r, rg, omega, ri, pot, mplanet, alpha;
   real viscosity, t1, t2, r1, r2;
   dens= Rho->Field;
   vr  = Vr->Field;
@@ -252,7 +252,6 @@ PlanetarySystem *sys;
   nr  = Rho->Nrad;
   ns  = Rho->Nsec;
   mplanet = sys->mass[0];
-  abin = sys->x[0] / (1. + ECCENTRICITY);
   sprintf (csfile, "%s%s", OUTPUTDIR, "soundspeed.dat");
   CS = fopen (csfile, "r");
   if (CS == NULL) {
@@ -302,16 +301,17 @@ PlanetarySystem *sys;
       l = j+i*ns;
       rg = r;
 
- //      omega = sqrt(G*1.0/rg/rg/rg);
- //      vt[l] = omega*r*\
-	// sqrt(1.0-pow(ASPECTRATIO,2.0)*\
-	//      pow(r,2.0*FLARINGINDEX)*\
-	//      (1.+SIGMASLOPE-2.0*FLARINGINDEX));
+//      omega = sqrt(G*1.0/rg/rg/rg);
+//      vt[l] = omega*r*\
+//      sqrt(1.0-pow(ASPECTRATIO,2.0)*\
+//      pow(r,2.0*FLARINGINDEX)*\
+//      (1.+SIGMASLOPE-2.0*FLARINGINDEX));
 
-      alpha = rg / abin;
+      // assume a_bin = 1
+      alpha = rg / 1.;
 
       pot = G * 1.0 / rg;
-      pot -= (G*mplanet*alpha/(2.*abin))*(LaplaceB(1.5,1.,alpha) - alpha*LaplaceB(1.5,0.,alpha) +\
+      pot -= (G*mplanet*alpha/(2.*1.0))*(LaplaceB(1.5,1.,alpha) - alpha*LaplaceB(1.5,0.,alpha) +\
         (pow(ECCENTRICITY,2.)/4.)*(LaplaceB(1.5,1.,alpha) + 1.5*alpha*(LaplaceB(2.5,0.,alpha) -\
           2.*alpha*LaplaceB(2.5,1.,alpha) + LaplaceB(2.5,2.,alpha))));
 
