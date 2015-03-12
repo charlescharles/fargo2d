@@ -1,4 +1,4 @@
-/** \file SourceEuler.c 
+/** \file SourceEuler.c
 
 Contains routines used by the hydrodynamical loop. More specifically,
 it contains the main loop itself and all the source term substeps
@@ -18,7 +18,7 @@ transport substep is treated elsewhere. */
 static PolarGrid *TemperInt;
 static PolarGrid *VradNew,   *VradInt;
 static PolarGrid *VthetaNew, *VthetaInt;
-static real timeCRASH;  
+static real timeCRASH;
 extern boolean Corotating;
 
 static int AlreadyCrashed = 0, GasTimeStepsCFL;
@@ -41,14 +41,14 @@ PolarGrid *array;
   for (i = 0; i < nr; i++) {
     for (j = 0; j < ns; j++) {
       l = j+i*ns;
-//      if (ptr[l] < 0.0) 
+//      if (ptr[l] < 0.0)
 //	bool = YES;
       if (ptr[l]<DENSITYFLOOR)ptr[l]=DENSITYFLOOR;
     }
   }
   return bool;
 }
- 
+
 void FillPolar1DArrays ()
 {
   FILE *input, *output;
@@ -112,8 +112,9 @@ void FillPolar1DArrays ()
   if (input != NULL) fclose (input);
 }
 
-void InitEuler (Rho, Vr, Vt)
+void InitEuler (Rho, Vr, Vt, sys)
 PolarGrid *Rho, *Vr, *Vt;
+PlanetarySystem *sys;
 {
   FillPolar1DArrays ();
   FillSigma ();
@@ -127,7 +128,7 @@ PolarGrid *Rho, *Vr, *Vt;
   VthetaInt    = CreatePolarGrid(NRAD, NSEC, "VthetaInt");
   TemperInt    = CreatePolarGrid(NRAD, NSEC, "TemperInt");
   Potential    = CreatePolarGrid(NRAD, NSEC, "Potential");
-  InitGas (Rho, Vr, Vt);
+  InitGas (Rho, Vr, Vt, sys);
 }
 
 real min2 (a,b)
@@ -175,7 +176,7 @@ PlanetarySystem *sys;
   gastimestepcfl = 1;
   if (IsDisk == YES) {
     CommunicateBoundaries (Rho,Vrad,Vtheta,Label);
-    if (SloppyCFL == YES) 
+    if (SloppyCFL == YES)
       gastimestepcfl = ConditionCFL (Vrad, Vtheta, DT-dtemp);
   }
   MPI_Allreduce (&gastimestepcfl, &GasTimeStepsCFL, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
@@ -183,6 +184,10 @@ PlanetarySystem *sys;
   while (dtemp < 0.999999999*DT) {
     MassTaper = PhysicalTime/(MASSTAPER*2.0*M_PI);
     MassTaper = (MassTaper > 1.0 ? 1.0 : pow(sin(MassTaper*M_PI/2.0),2.0));
+
+    NonAxiTaper = PhysicalTime/(NONAXITAPER*2.0*M_PI);
+    NonAxiTaper = (NonAxiTaper > 1.0 ? 1.0 : pow(sin(NonAxiTaper*M_PI/2.0),2.0));
+
     if (IsDisk == YES) {
       CommunicateBoundaries (Rho,Vrad,Vtheta,Label);
       if (SloppyCFL == NO) {
@@ -298,7 +303,7 @@ real dt;
 	if (j == ns-1) ljp = i*ns;
 	cs2m = cs2 = SOUNDSPEED[i]*SOUNDSPEED[i];
 	gradp = cs2*(rho[l]-rho[ljm])*2.0/(rho[l]+rho[ljm])*invdxtheta;
-	gradphi = (Pot[l]-Pot[ljm])*invdxtheta;   
+	gradphi = (Pot[l]-Pot[ljm])*invdxtheta;
 	vthetaint[l] = vtheta[l]-dt*(gradp+gradphi);
 	vthetaint[l] += dt*supp_torque;
       }
@@ -339,8 +344,8 @@ real dt;
       dv = vrad[lip]-vrad[l];
       if (dv < 0.0)
         qr[l] = CVNR*CVNR*rho[l]*dv*dv;
-      else 
-        qr[l] = 0.0; 
+      else
+        qr[l] = 0.0;
       dv = vtheta[ljp]-vtheta[l];
       if (dv < 0.0)
         qt[l] = CVNR*CVNR*rho[l]*dv*dv;
@@ -380,7 +385,7 @@ real dt;
     }
   }
 }
-		   		   
+
 int ConditionCFL (Vrad, Vtheta, deltaT)
 PolarGrid *Vrad, *Vtheta;
 real deltaT;
@@ -448,10 +453,10 @@ real deltaT;
 	  itdbg3=1.0/invdt3; itdbg4=1.0/invdt4;
 	  itdbg5=1.0/invdt5;
 	  mdtdbg = newdt;
-	  viscr = dxrad/dvr/4.0/CVNR/CVNR;     
+	  viscr = dxrad/dvr/4.0/CVNR/CVNR;
 	  visct = dxtheta/dvt/4.0/CVNR/CVNR;
 	}
-      }  
+      }
     }
   }
   for (i = Zero_or_active; i < MaxMO_or_active; i++) {

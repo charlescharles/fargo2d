@@ -107,7 +107,7 @@ char *argv[];
   sys = InitPlanetarySystem (PLANETCONFIG);
   ListPlanets (sys);
   SplitDomain ();
-  if (verbose == YES) 
+  if (verbose == YES)
     TellEverything ();
   if (disable == YES)
     prs_exit (0);
@@ -122,7 +122,7 @@ char *argv[];
   masterprint ("done.\n");
   OmegaFrame = OMEGAFRAME;
   if (Corotating == YES) OmegaFrame = GetPsysInfo (sys, FREQUENCY);
-  Initialization (gas_density, gas_v_rad, gas_v_theta, gas_label);
+  Initialization (gas_density, gas_v_rad, gas_v_theta, gas_label, sys);
   InitComputeAccel ();
   if (Restart == YES) {
     begin_i         = NbRestart * NINTERM;

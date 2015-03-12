@@ -31,7 +31,7 @@ int filenumber;
   sprintf (name, "%s%s%d.dat", OUTPUTDIR, fileprefix, filenumber);
   input = fopen (name, "r");
   if (input == NULL) {
-    fprintf (stderr, "WARNING ! Can't read %s. Restarting with t=0 settings.\n", name); 
+    fprintf (stderr, "WARNING ! Can't read %s. Restarting with t=0 settings.\n", name);
     if (CPU_Rank < CPU_Number-1) MPI_Send (&foo, 1, MPI_INT, CPU_Rank+1, 10, MPI_COMM_WORLD);
     return;
   }
@@ -64,11 +64,12 @@ PolarGrid *array;
   }
 }
 
-void Initialization (gas_density, gas_v_rad, gas_v_theta, gas_label)
+void Initialization (gas_density, gas_v_rad, gas_v_theta, gas_label, sys)
 PolarGrid *gas_density, *gas_v_rad, *gas_v_theta, *gas_label;
+PlanetarySystem *sys;
 {
   ReadPrevDim ();
-  InitEuler (gas_density, gas_v_rad, gas_v_theta);
+  InitEuler (gas_density, gas_v_rad, gas_v_theta, sys);
   InitLabel (gas_label);
   if (Restart == YES) {
     CheckRebin (NbRestart);
@@ -85,5 +86,5 @@ PolarGrid *gas_density, *gas_v_rad, *gas_v_theta, *gas_label;
     fprintf (stderr, "done\n");
     fflush (stderr);
   }
-  WriteDim (); 
+  WriteDim ();
 }

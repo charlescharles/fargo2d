@@ -118,3 +118,5 @@ Pair MassInOut ();
 void StockholmBoundary ();
 void MakeDir ();
 FILE *fopenp ();
+
+real LaplaceB ();

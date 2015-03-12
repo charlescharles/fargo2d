@@ -25,7 +25,7 @@ static real vt_int[MAX1D], vt_cent[MAX1D];
 
 void ComputeIndirectTerm () {
   IndirectTerm.x = -DiskOnPrimaryAcceleration.x;
-  IndirectTerm.y = -DiskOnPrimaryAcceleration.y; 
+  IndirectTerm.y = -DiskOnPrimaryAcceleration.y;
   if (Indirect_Term == NO) {
     IndirectTerm.x = 0.0;
     IndirectTerm.y = 0.0;
@@ -41,6 +41,7 @@ PlanetarySystem *sys;
   real xplanet, yplanet, RRoche,smooth, mplanet, frac;
   real PlanetDistance, *Pot, pot, smoothing, cs;
   real InvPlanetDistance3, InvDistance;
+  real fullPot;
   Pot= Potential->Field;
   nr = Potential->Nrad;
   ns = Potential->Nsec;
@@ -62,24 +63,50 @@ PlanetarySystem *sys;
       frac = iplanet-floor(iplanet);
       ii = (int)iplanet;
       cs = GLOBAL_SOUNDSPEED[ii]*(1.0-frac)+\
-	GLOBAL_SOUNDSPEED[ii+1]*frac;
+        GLOBAL_SOUNDSPEED[ii+1]*frac;
       smoothing = cs * PlanetDistance * sqrt(PlanetDistance) * THICKNESSSMOOTHING;
     }
     smooth = smoothing*smoothing;
 #pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot)
-    for (i = 0; i < nr; i++) {
-      InvDistance = 1.0/Rmed[i];
-      for (j = 0; j < ns; j++) {
-	l = j+i*ns;
-	angle = (real)j/(real)ns*2.0*PI;
-	x = Rmed[i]*cos(angle);
-	y = Rmed[i]*sin(angle);
-	distance = (x-xplanet)*(x-xplanet)+(y-yplanet)*(y-yplanet);
-	distancesmooth = sqrt(distance+smooth);
-	pot = -G*mplanet/distancesmooth;
-	if (Indirect_Term == YES)
-	  pot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
-	Pot[l] += pot;
+
+    if (USENONAXITAPER == 0) {
+      for (i = 0; i < nr; i++) {
+        InvDistance = 1.0/Rmed[i];
+        for (j = 0; j < ns; j++) {
+        	l = j+i*ns;
+        	angle = (real)j/(real)ns*2.0*PI;
+        	x = Rmed[i]*cos(angle);
+        	y = Rmed[i]*sin(angle);
+        	distance = (x-xplanet)*(x-xplanet)+(y-yplanet)*(y-yplanet);
+        	distancesmooth = sqrt(distance+smooth);
+        	pot = -G*mplanet/distancesmooth;
+        	if (Indirect_Term == YES)
+        	  pot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
+        	Pot[l] += pot;
+        }
+      }
+    } else if (USENONAXITAPER == 1) {
+      for (i = 0; i < nr; i++) {
+        InvDistance = 1.0/Rmed[i];
+        for (j = 0; j < ns; j++) {
+          l = j+i*ns;
+          angle = (real)j/(real)ns*2.0*PI;
+
+          // m=0 component
+          pot = -(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., Rmed[i]/PlanetDistance);
+
+          x = Rmed[i]*cos(angle);
+          y = Rmed[i]*sin(angle);
+          distance = (x-xplanet)*(x-xplanet)+(y-yplanet)*(y-yplanet);
+          distancesmooth = sqrt(distance+smooth);
+          // full potential (axi + non-axi)
+          fullPot = -G*mplanet/distancesmooth;
+          if (Indirect_Term == YES)
+            fullPot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
+
+          pot += NonAxiTaper * (fullPot - pot);
+          Pot[l] += pot;
+        }
       }
     }
   }
@@ -93,15 +120,15 @@ PlanetarySystem *sys;
       y = Rmed[i]*sin(angle);
       pot = -G*1.0*InvDistance;  /*    Central Mass is 1 */
       pot -= IndirectTerm.x*x + IndirectTerm.y*y; /* Indirect term from disk only */
-      Pot[l] += pot;	
+      Pot[l] += pot;
     }
   }
-} 
+}
 
 void AdvanceSystemFromDisk (Rho, sys, dt)
 PlanetarySystem *sys;
 PolarGrid *Rho;
-real dt;		       
+real dt;
 {
   int NbPlanets, k, ii;
   Pair gamma;
@@ -173,8 +200,8 @@ real dt;
     vy = new_r*sqrt((1.+sys->mass[0])/new_r/new_r/new_r);
     sys->x[0] = new_r*cos(dtheta+theta);
     sys->y[0] = new_r*sin(dtheta+theta);
-    sys->vx[0]= vx*cos(dtheta+theta)-vy*sin(dtheta+theta); 
-    sys->vy[0]= vx*sin(dtheta+theta)+vy*cos(dtheta+theta); 
+    sys->vx[0]= vx*cos(dtheta+theta)-vy*sin(dtheta+theta);
+    sys->vy[0]= vx*sin(dtheta+theta)+vy*cos(dtheta+theta);
   }
 }
 
@@ -191,7 +218,7 @@ PlanetarySystem *sys;
     vy = sys->vy[i];
     FindOrbitalElements (x,y,vx,vy,1.0+sys->mass[i],i);
   }
-} 
+}
 
 real ConstructSequence (u, v, n)
      real *u, *v;
@@ -208,21 +235,24 @@ real ConstructSequence (u, v, n)
 }
 
 void
-InitGas (Rho, Vr, Vt)
+InitGas (Rho, Vr, Vt, sys)
 PolarGrid *Rho, *Vr, *Vt;
+PlanetarySystem *sys;
 {
   int i, j, l, nr, ns;
   real *dens, *vr, *vt;
   float temporary;
   FILE *CS;
   char csfile[512];
-  real  r, rg, omega, ri;
+  real  r, rg, omega, ri, pot, mplanet, alpha, abin;
   real viscosity, t1, t2, r1, r2;
   dens= Rho->Field;
   vr  = Vr->Field;
   vt  = Vt->Field;
   nr  = Rho->Nrad;
   ns  = Rho->Nsec;
+  mplanet = sys->mass[0];
+  abin = sys->x[0] / (1. + ECCENTRICITY);
   sprintf (csfile, "%s%s", OUTPUTDIR, "soundspeed.dat");
   CS = fopen (csfile, "r");
   if (CS == NULL) {
@@ -271,15 +301,27 @@ PolarGrid *Rho, *Vr, *Vt;
     for (j = 0; j < ns; j++) {
       l = j+i*ns;
       rg = r;
-      omega = sqrt(G*1.0/rg/rg/rg);
-      vt[l] = omega*r*\
-	sqrt(1.0-pow(ASPECTRATIO,2.0)*\
-	     pow(r,2.0*FLARINGINDEX)*\
-	     (1.+SIGMASLOPE-2.0*FLARINGINDEX));
+
+ //      omega = sqrt(G*1.0/rg/rg/rg);
+ //      vt[l] = omega*r*\
+	// sqrt(1.0-pow(ASPECTRATIO,2.0)*\
+	//      pow(r,2.0*FLARINGINDEX)*\
+	//      (1.+SIGMASLOPE-2.0*FLARINGINDEX));
+
+      alpha = rg / abin;
+
+      pot = G * 1.0 / rg;
+      pot -= (G*mplanet*alpha/(2.*abin))*(LaplaceB(1.5,1.,alpha) - alpha*LaplaceB(1.5,0.,alpha) +\
+        (pow(ECCENTRICITY,2.)/4.)*(LaplaceB(1.5,1.,alpha) + 1.5*alpha*(LaplaceB(2.5,0.,alpha) -\
+          2.*alpha*LaplaceB(2.5,1.,alpha) + LaplaceB(2.5,2.,alpha))));
+
+      vt[l] = sqrt(pot) * sqrt(1.0-pow(ASPECTRATIO,2.0)*pow(r,2.0*FLARINGINDEX)*\
+        (1.+SIGMASLOPE-2.0*FLARINGINDEX));
+
       vt[l] -= OmegaFrame*r;
       if (CentrifugalBalance)
 	vt[l] = vt_cent[i+IMIN];
-      if (i == nr) 
+      if (i == nr)
 	vr[l] = 0.0;
       else {
 	vr[l] = IMPOSEDDISKDRIFT*SIGMA0/SigmaInf[i]/ri;
@@ -294,4 +336,25 @@ PolarGrid *Rho, *Vr, *Vt;
   }
   for (j = 0; j < ns; j++)
     vr[j] = vr[j+ns*nr] = 0.0;
+}
+
+real
+LaplaceB (s, j, a)
+real s, a;
+int j;
+{
+  real pre, o2, o4;
+  int i;
+
+  pre = pow(a, j);
+  // 0 to j-1 inclusive
+  for (i=0; i < j; i++) {
+    pre *= s + (1.0*i);
+    pre /= (1.0*i) + 1.;
+  }
+
+  o2 = s * (s+j) * pow(a, 2.) / (1.*j + 1.);
+  o4 = s*(s+1.)*(s+j)*(s+j+1.)*pow(a, 4.) / (2.*(j+1.)*(j+2.));
+
+  return 2. * pre * (1. + o2 + o4);
 }
