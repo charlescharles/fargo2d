@@ -11,7 +11,7 @@ int GLOBALNRAD;
 real Rinf[MAX1D], Rsup[MAX1D], Rmed[MAX1D], Surf[MAX1D];
 real InvRmed[MAX1D], InvSurf[MAX1D], InvDiffRmed[MAX1D];
 real InvDiffRsup[MAX1D], InvRinf[MAX1D], Radii[MAX1D], GlobalRmed[MAX1D];
-real SigmaMed[MAX1D], SigmaInf[MAX1D], MassTaper, NonAxiTaper;
+real SigmaMed[MAX1D], SigmaInf[MAX1D], MassTaper;
 real OmegaFrame, PhysicalTime=0.0, PhysicalTimeInitial;
 int TimeStep=0;
 real SOUNDSPEED[MAX1D];

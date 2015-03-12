@@ -185,9 +185,6 @@ PlanetarySystem *sys;
     MassTaper = PhysicalTime/(MASSTAPER*2.0*M_PI);
     MassTaper = (MassTaper > 1.0 ? 1.0 : pow(sin(MassTaper*M_PI/2.0),2.0));
 
-    NonAxiTaper = PhysicalTime/(NONAXITAPER*2.0*M_PI);
-    NonAxiTaper = (NonAxiTaper > 1.0 ? 1.0 : pow(sin(NonAxiTaper*M_PI/2.0),2.0));
-
     if (IsDisk == YES) {
       CommunicateBoundaries (Rho,Vrad,Vtheta,Label);
       if (SloppyCFL == NO) {

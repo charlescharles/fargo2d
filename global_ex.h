@@ -29,7 +29,7 @@ extern int GLOBALNRAD;
 extern real Rinf[MAX1D], Rsup[MAX1D], Rmed[MAX1D], Surf[MAX1D];
 extern real InvRmed[MAX1D], InvSurf[MAX1D], InvDiffRmed[MAX1D];
 extern real InvDiffRsup[MAX1D], InvRinf[MAX1D], Radii[MAX1D], GlobalRmed[MAX1D];
-extern real SigmaMed[MAX1D], SigmaInf[MAX1D], MassTaper, NonAxiTaper;
+extern real SigmaMed[MAX1D], SigmaInf[MAX1D], MassTaper;
 extern real OmegaFrame, PhysicalTime, PhysicalTimeInitial;
 extern int TimeStep;
 extern real SOUNDSPEED[MAX1D];

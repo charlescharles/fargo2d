@@ -53,5 +53,5 @@ extern	int	TRUNCATETYPE;
 extern	real	TRUNCATERADIUS;
 extern	real	TRUNCATEWIDTH;
 extern	real	TRUNCATEDENSITY;
-extern	real	NONAXITAPER;
-extern	int	USENONAXITAPER;
+extern	int	DAMPEDCOMPONENT;
+extern	int	USEDAMPEDCOMPONENT;
