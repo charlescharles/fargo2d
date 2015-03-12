@@ -41,7 +41,7 @@ PlanetarySystem *sys;
   real xplanet, yplanet, RRoche,smooth, mplanet, frac;
   real PlanetDistance, *Pot, pot, smoothing, cs;
   real InvPlanetDistance3, InvDistance;
-  real fullPot;
+  real planetAngle, component;
   Pot= Potential->Field;
   nr = Potential->Nrad;
   ns = Potential->Nsec;
@@ -52,6 +52,7 @@ PlanetarySystem *sys;
   for (k = 0; k < NbPlanets; k++) {
     xplanet = sys->x[k];
     yplanet = sys->y[k];
+    planetAngle = atan2(yplanet, xplanet);
     mplanet = sys->massp[k]*MassTaper;
     PlanetDistance = sqrt(xplanet*xplanet+yplanet*yplanet);
     InvPlanetDistance3 =  1.0/PlanetDistance/PlanetDistance/PlanetDistance;
@@ -69,7 +70,7 @@ PlanetarySystem *sys;
     smooth = smoothing*smoothing;
 #pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot)
 
-    if (USENONAXITAPER == 0) {
+    if (USEDAMPEDCOMPONENT == 0) {
       for (i = 0; i < nr; i++) {
         InvDistance = 1.0/Rmed[i];
         for (j = 0; j < ns; j++) {
@@ -85,26 +86,24 @@ PlanetarySystem *sys;
         	Pot[l] += pot;
         }
       }
-    } else if (USENONAXITAPER == 1) {
+    } else if (USEDAMPEDCOMPONENT == 1) {
       for (i = 0; i < nr; i++) {
         InvDistance = 1.0/Rmed[i];
         for (j = 0; j < ns; j++) {
           l = j+i*ns;
           angle = (real)j/(real)ns*2.0*PI;
-
-          // m=0 component
-          pot = -(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., Rmed[i]/PlanetDistance);
-
           x = Rmed[i]*cos(angle);
           y = Rmed[i]*sin(angle);
           distance = (x-xplanet)*(x-xplanet)+(y-yplanet)*(y-yplanet);
           distancesmooth = sqrt(distance+smooth);
-          // full potential (axi + non-axi)
-          fullPot = -G*mplanet/distancesmooth;
+          pot = -G*mplanet/distancesmooth;
           if (Indirect_Term == YES)
-            fullPot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
+            pot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
 
-          pot += NonAxiTaper * (fullPot - pot);
+          // cancel mth component
+          component = 1. * DAMPEDCOMPONENT;
+          pot += (G*mplanet/PlanetDistance) * LaplaceB(0.5,component, Rmed[i]/PlanetDistance) *\
+            cos(component*(angle-planetAngle));
           Pot[l] += pot;
         }
       }
@@ -301,22 +300,22 @@ PlanetarySystem *sys;
       l = j+i*ns;
       rg = r;
 
-//      omega = sqrt(G*1.0/rg/rg/rg);
-//      vt[l] = omega*r*\
-//      sqrt(1.0-pow(ASPECTRATIO,2.0)*\
-//      pow(r,2.0*FLARINGINDEX)*\
-//      (1.+SIGMASLOPE-2.0*FLARINGINDEX));
+      omega = sqrt(G*1.0/rg/rg/rg);
+      vt[l] = omega*r*\
+      sqrt(1.0-pow(ASPECTRATIO,2.0)*\
+      pow(r,2.0*FLARINGINDEX)*\
+      (1.+SIGMASLOPE-2.0*FLARINGINDEX));
 
       // assume a_bin = 1
-      alpha = rg / 1.;
+      // alpha = rg / 1.;
 
-      pot = G * 1.0 / rg;
-      pot -= (G*mplanet*alpha/(2.*1.0))*(LaplaceB(1.5,1.,alpha) - alpha*LaplaceB(1.5,0.,alpha) +\
-        (pow(ECCENTRICITY,2.)/4.)*(LaplaceB(1.5,1.,alpha) + 1.5*alpha*(LaplaceB(2.5,0.,alpha) -\
-          2.*alpha*LaplaceB(2.5,1.,alpha) + LaplaceB(2.5,2.,alpha))));
+      // pot = G * 1.0 / rg;
+      // pot -= (G*mplanet*alpha/(2.))*(LaplaceB(1.5,1.,alpha) - alpha*LaplaceB(1.5,0.,alpha) +\
+      //   (pow(ECCENTRICITY,2.)/4.)*(LaplaceB(1.5,1.,alpha) + 1.5*alpha*(LaplaceB(2.5,0.,alpha) -\
+      //     2.*alpha*LaplaceB(2.5,1.,alpha) + LaplaceB(2.5,2.,alpha))));
 
-      vt[l] = sqrt(pot) * sqrt(1.0-pow(ASPECTRATIO,2.0)*pow(r,2.0*FLARINGINDEX)*\
-        (1.+SIGMASLOPE-2.0*FLARINGINDEX));
+      // vt[l] = sqrt(pot) * sqrt(1.0-pow(ASPECTRATIO,2.0)*pow(r,2.0*FLARINGINDEX)*\
+      //   (1.+SIGMASLOPE-2.0*FLARINGINDEX));
 
       vt[l] -= OmegaFrame*r;
       if (CentrifugalBalance)
