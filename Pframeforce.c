@@ -128,6 +128,8 @@ PlanetarySystem *sys;
 
           sprintf (msg, "m=0 pot: %f\n", pot);
           message (msg);
+          sprintf (msg, "laplaceB, second: %f\n", LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
+          message (msg);
 
           pot += NonAxiTaper * (fullPot - pot);
 
