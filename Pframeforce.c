@@ -111,8 +111,6 @@ PlanetarySystem *sys;
 
           sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., alpha));
           message (msg);
-          sprintf (msg, "alpha: %f\n", alpha);
-          message (msg);
           sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., alpha));
           message (msg);
           sprintf (msg, "mplanet: %f\n", mplanet);
