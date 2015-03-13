@@ -374,12 +374,14 @@ PlanetarySystem *sys;
 }
 
 real
-LaplaceB (s, j, a)
+LaplaceB (s, jn, a)
 real s, a;
-int j;
+int jn;
 {
-  real pre, o2, o4;
+  real pre, o2, o4, j;
   int i;
+
+  j = 1.0 * jn;
 
   pre = pow(a, j);
   // 0 to j-1 inclusive
