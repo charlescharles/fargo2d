@@ -68,7 +68,7 @@ PlanetarySystem *sys;
       smoothing = cs * PlanetDistance * sqrt(PlanetDistance) * THICKNESSSMOOTHING;
     }
     smooth = smoothing*smoothing;
-#pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot,fullPot,alpha)
+#pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot,fullPot,alpha,cmd.)
 
     if (USENONAXITAPER == 0) {
       for (i = 0; i < nr; i++) {
@@ -380,6 +380,7 @@ int jn;
 {
   real pre, o2, o4, j;
   int i;
+  char msg[1024];
 
   j = 1.0 * jn;
 
