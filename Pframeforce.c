@@ -42,6 +42,7 @@ PlanetarySystem *sys;
   real PlanetDistance, *Pot, pot, smoothing, cs;
   real InvPlanetDistance3, InvDistance;
   real fullPot;
+  char msg[1024];
   Pot= Potential->Field;
   nr = Potential->Nrad;
   ns = Potential->Nsec;
@@ -86,6 +87,8 @@ PlanetarySystem *sys;
         }
       }
     } else if (USENONAXITAPER == 1) {
+      sprintf (msg, "using nonaxi taper");
+      message (msg);
       for (i = 0; i < nr; i++) {
         InvDistance = 1.0/Rmed[i];
         for (j = 0; j < ns; j++) {
@@ -104,7 +107,14 @@ PlanetarySystem *sys;
           if (Indirect_Term == YES)
             fullPot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
 
+          sprintf (msg, "m=0 pot: %f\n", pot);
+          message (msg);
+
           pot += NonAxiTaper * (fullPot - pot);
+
+          sprintf (msg, "tapered full potential: %f\n", pot);
+          message (msg);
+
           Pot[l] += pot;
         }
       }
