@@ -117,6 +117,8 @@ PlanetarySystem *sys;
           message (msg);
           sprintf (msg, "planetdistance: %f\n", PlanetDistance);
           message (msg);
+          sprintf (msg, "Gm/r: %f\n", (G*mplanet/PlanetDistance));
+          message (msg);
           sprintf (msg, "pot, calculated: %f\n", -1.*(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
           message (msg);
 
