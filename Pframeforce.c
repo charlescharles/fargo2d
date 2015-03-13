@@ -113,8 +113,6 @@ PlanetarySystem *sys;
           message (msg);
           sprintf (msg, "mplanet: %f\n", mplanet);
           message (msg);
-          sprintf (msg, "masstaper: %f\n", MassTaper);
-          message (msg);
 
           sprintf (msg, "m=0 pot: %f\n", pot);
           message (msg);
