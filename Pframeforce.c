@@ -387,20 +387,11 @@ int jn;
   pre = pow(a, j);
   // 0 to j-1 inclusive
   for (i=0; i < j; i++) {
-    pre *= s + (1.0*i);
-    pre /= (1.0*i) + 1.;
+    pre *= (s + (1.0*i)) / ((1.0*i) + 1.);
   }
 
   o2 = s * (s+j) * pow(a, 2.) / (1.*j + 1.);
   o4 = s*(s+1.)*(s+j)*(s+j+1.)*pow(a, 4.) / (2.*(j+1.)*(j+2.));
-
-
-  sprintf (msg, "pre: %f\n", pre);
-  message (msg);
-  sprintf (msg, "o2: %f\n", o2);
-  message (msg);
-  sprintf (msg, "o4: %f\n", o4);
-  message (msg);
 
   return 2. * pre * (1. + o2 + o4);
 }
