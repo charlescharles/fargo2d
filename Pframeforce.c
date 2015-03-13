@@ -98,7 +98,7 @@ PlanetarySystem *sys;
           angle = (real)j/(real)ns*2.0*PI;
 
           // m=0 component
-          pot = -(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., Rmed[i]/PlanetDistance);
+          pot = -1.*(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., Rmed[i]/PlanetDistance);
 
           x = Rmed[i]*cos(angle);
           y = Rmed[i]*sin(angle);
@@ -116,6 +116,8 @@ PlanetarySystem *sys;
           sprintf (msg, "G: %f\n", G);
           message (msg);
           sprintf (msg, "planetdistance: %f\n", PlanetDistance);
+          message (msg);
+          sprintf (msg, "pot, calculated: %f\n", -1.*(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
           message (msg);
 
           sprintf (msg, "m=0 pot: %f\n", pot);
