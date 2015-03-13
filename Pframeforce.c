@@ -41,7 +41,7 @@ PlanetarySystem *sys;
   real xplanet, yplanet, RRoche,smooth, mplanet, frac;
   real PlanetDistance, *Pot, pot, smoothing, cs;
   real InvPlanetDistance3, InvDistance;
-  real fullPot;
+  real fullPot,alpha;
   char msg[1024];
   Pot= Potential->Field;
   nr = Potential->Nrad;
@@ -68,7 +68,7 @@ PlanetarySystem *sys;
       smoothing = cs * PlanetDistance * sqrt(PlanetDistance) * THICKNESSSMOOTHING;
     }
     smooth = smoothing*smoothing;
-#pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot)
+#pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot,fullPot,alpha)
 
     if (USENONAXITAPER == 0) {
       sprintf (msg, "not using nonaxi taper");
@@ -97,8 +97,10 @@ PlanetarySystem *sys;
           l = j+i*ns;
           angle = (real)j/(real)ns*2.0*PI;
 
+          alpha = Rmed[i]/PlanetDistance;
+
           // m=0 component
-          pot = -1.*(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., Rmed[i]/PlanetDistance);
+          pot = -1.*(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., alpha);
 
           x = Rmed[i]*cos(angle);
           y = Rmed[i]*sin(angle);
@@ -109,9 +111,9 @@ PlanetarySystem *sys;
           if (Indirect_Term == YES)
             fullPot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
 
-          sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
+          sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., alpha));
           message (msg);
-          sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
+          sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., alpha));
           message (msg);
           sprintf (msg, "mplanet: %f\n", mplanet);
           message (msg);
@@ -121,16 +123,16 @@ PlanetarySystem *sys;
           message (msg);
           sprintf (msg, "-Gm/r: %f\n", -1.*(G*mplanet/PlanetDistance));
           message (msg);
-          sprintf (msg, "pot, calculated: %f\n", -1.*(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
+          sprintf (msg, "pot, calculated: %f\n", -1.*(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., alpha));
           message (msg);
 
           // m=0 component
-          //pot = -1.*(G*mplanet/PlanetDistance);// * LaplaceB(1.5,0., Rmed[i]/PlanetDistance);
-          pot = LaplaceB(1.5,0., Rmed[i]/PlanetDistance);
+          //pot = -1.*(G*mplanet/PlanetDistance);// * LaplaceB(1.5,0., alpha);
+          pot = LaplaceB(1.5,0., alpha);
 
           sprintf (msg, "m=0 pot: %f\n", pot);
           message (msg);
-          sprintf (msg, "laplaceB, second: %f\n", LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
+          sprintf (msg, "laplaceB, second: %f\n", LaplaceB(1.5,0., alpha));
           message (msg);
 
           pot += NonAxiTaper * (fullPot - pot);
