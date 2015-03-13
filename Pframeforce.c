@@ -71,8 +71,6 @@ PlanetarySystem *sys;
 #pragma omp parallel for private(InvDistance,j,l,angle,x,y,distance,distancesmooth,pot,fullPot,alpha)
 
     if (USENONAXITAPER == 0) {
-      sprintf (msg, "not using nonaxi taper");
-      message (msg);
       for (i = 0; i < nr; i++) {
         InvDistance = 1.0/Rmed[i];
         for (j = 0; j < ns; j++) {
@@ -89,8 +87,6 @@ PlanetarySystem *sys;
         }
       }
     } else if (USENONAXITAPER == 1) {
-      sprintf (msg, "using nonaxi taper");
-      message (msg);
       for (i = 0; i < nr; i++) {
         InvDistance = 1.0/Rmed[i];
         for (j = 0; j < ns; j++) {
@@ -98,6 +94,8 @@ PlanetarySystem *sys;
           angle = (real)j/(real)ns*2.0*PI;
 
           alpha = Rmed[i]/PlanetDistance;
+          sprintf (msg, "alpha: %f\n", alpha);
+          message (msg);
 
           // m=0 component
           pot = -1.*(G*mplanet/PlanetDistance) * LaplaceB(1.5,0., alpha);
