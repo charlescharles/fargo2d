@@ -111,6 +111,8 @@ PlanetarySystem *sys;
 
           sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
           message (msg);
+          sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
+          message (msg);
           sprintf (msg, "mplanet: %f\n", mplanet);
           message (msg);
           sprintf (msg, "G: %f\n", G);
