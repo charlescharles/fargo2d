@@ -109,6 +109,11 @@ PlanetarySystem *sys;
           if (Indirect_Term == YES)
             fullPot += G*mplanet*InvPlanetDistance3*(x*xplanet+y*yplanet); /* Indirect term from planet  */
 
+          sprintf (msg, "laplaceB: %f\n", LaplaceB(1.5,0., Rmed[i]/PlanetDistance));
+          message (msg);
+          sprintf (msg, "mplanet: %f\n", mplanet);
+          message (msg);
+
           sprintf (msg, "m=0 pot: %f\n", pot);
           message (msg);
 
