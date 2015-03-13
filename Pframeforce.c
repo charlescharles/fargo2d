@@ -53,7 +53,7 @@ PlanetarySystem *sys;
   for (k = 0; k < NbPlanets; k++) {
     xplanet = sys->x[k];
     yplanet = sys->y[k];
-    mplanet = sys->massp[k]*MassTaper;
+    mplanet = sys->massp[k];
     PlanetDistance = sqrt(xplanet*xplanet+yplanet*yplanet);
     InvPlanetDistance3 =  1.0/PlanetDistance/PlanetDistance/PlanetDistance;
     RRoche = PlanetDistance*pow((1.0/3.0*mplanet),1.0/3.0);
